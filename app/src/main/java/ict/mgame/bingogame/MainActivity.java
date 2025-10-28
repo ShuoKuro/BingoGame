@@ -1,5 +1,6 @@
 package ict.mgame.bingogame;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView drawnNumberText;
     private TextView usernameDisplay;
     private Button drawButton;
+    private Button settingsButton;
     private List<Integer> drawnNumbers = new ArrayList<>();
     private Set<Integer> cardNumbers = new HashSet<>();
     private TextView[][] cells = new TextView[5][5];
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         drawnNumberText = findViewById(R.id.drawn_number);
         usernameDisplay = findViewById(R.id.username_display);
         drawButton = findViewById(R.id.draw_button);
+        settingsButton = findViewById(R.id.settings_button);
 
         // Retrieve username from SharedPreferences
         SharedPreferences prefs = getSharedPreferences("login", MODE_PRIVATE);
@@ -48,6 +51,14 @@ public class MainActivity extends AppCompatActivity {
 
         initializeBingoCard();
         setupDrawButton();
+
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void initializeBingoCard() {
