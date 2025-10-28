@@ -23,6 +23,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText usernameEditText;
     private EditText passwordEditText;
     private Button enterButton;
+    private Button registerButton;
     private DatabaseHelper dbHelper;
 
     @Override
@@ -30,16 +31,18 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
 
-        TextView welcomeText = findViewById(R.id.welcome_text);
+        // welcomeText is found but unused; remove if not needed
+        // TextView welcomeText = findViewById(R.id.welcome_text);
         usernameEditText = findViewById(R.id.username);
         passwordEditText = findViewById(R.id.password);
         enterButton = findViewById(R.id.enter_button);
+        registerButton = findViewById(R.id.register_button);
 
         dbHelper = new DatabaseHelper(this);
 
         // Insert default user if not exists (for testing)
-        if (!userExists("admin")) {
-            insertUser("admin", "password");
+        if (!dbHelper.userExists("admin")) {
+            dbHelper.insertUser("admin", "password");
         }
 
         enterButton.setOnClickListener(new View.OnClickListener() {
@@ -53,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (validateLogin(username, password)) {
+                if (dbHelper.validateLogin(username, password)) {
                     // Store in SharedPreferences
                     SharedPreferences prefs = getSharedPreferences("login", MODE_PRIVATE);
                     SharedPreferences.Editor editor = prefs.edit();
@@ -75,30 +78,14 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
-    }
 
-    private boolean userExists(String username) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query("users", new String[]{"username"}, "username = ?", new String[]{username}, null, null, null);
-        boolean exists = cursor.getCount() > 0;
-        cursor.close();
-        return exists;
-    }
-
-    private void insertUser(String username, String password) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("username", username);
-        values.put("password", password);
-        db.insert("users", null, values);
-    }
-
-    private boolean validateLogin(String username, String password) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query("users", new String[]{"username"}, "username = ? AND password = ?", new String[]{username, password}, null, null, null);
-        boolean valid = cursor.getCount() > 0;
-        cursor.close();
-        return valid;
+        registerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     public static class DatabaseHelper extends SQLiteOpenHelper {
@@ -118,6 +105,30 @@ public class LoginActivity extends AppCompatActivity {
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             db.execSQL("DROP TABLE IF EXISTS users");
             onCreate(db);
+        }
+
+        public boolean userExists(String username) {
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.query("users", new String[]{"username"}, "username = ?", new String[]{username}, null, null, null);
+            boolean exists = cursor.getCount() > 0;
+            cursor.close();
+            return exists;
+        }
+
+        public void insertUser(String username, String password) {
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put("username", username);
+            values.put("password", password);
+            db.insert("users", null, values);
+        }
+
+        public boolean validateLogin(String username, String password) {
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.query("users", new String[]{"username"}, "username = ? AND password = ?", new String[]{username, password}, null, null, null);
+            boolean valid = cursor.getCount() > 0;
+            cursor.close();
+            return valid;
         }
     }
 }

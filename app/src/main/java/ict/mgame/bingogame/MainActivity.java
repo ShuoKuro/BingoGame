@@ -1,5 +1,6 @@
 package ict.mgame.bingogame;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     private GridLayout bingoGrid;
     private TextView drawnNumberText;
+    private TextView usernameDisplay;
     private Button drawButton;
     private List<Integer> drawnNumbers = new ArrayList<>();
     private Set<Integer> cardNumbers = new HashSet<>();
@@ -29,11 +31,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
         setContentView(R.layout.activity_main);
 
         bingoGrid = findViewById(R.id.bingo_grid);
         drawnNumberText = findViewById(R.id.drawn_number);
+        usernameDisplay = findViewById(R.id.username_display);
         drawButton = findViewById(R.id.draw_button);
+
+        // Retrieve username from SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("login", MODE_PRIVATE);
+        String username = prefs.getString("username", "Guest"); // Default to "Guest" if not found
+        usernameDisplay.setText("Welcome, " + username + "!");
 
         initializeBingoCard();
         setupDrawButton();
