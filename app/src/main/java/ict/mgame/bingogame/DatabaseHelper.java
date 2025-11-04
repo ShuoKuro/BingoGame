@@ -9,12 +9,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 import androidx.annotation.Nullable;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "bingo.db";
-    private static final int DATABASE_VERSION = 3; // Bumped for new columns
+    private static final int DATABASE_VERSION = 4; // Bumped for game state columns
 
     public DatabaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -22,7 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, wins INTEGER DEFAULT 0, coins INTEGER DEFAULT 20, daily_resets INTEGER DEFAULT 0, last_reset_date TEXT DEFAULT '')");
+        db.execSQL("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, wins INTEGER DEFAULT 0, coins INTEGER DEFAULT 20, daily_resets INTEGER DEFAULT 0, last_reset_date TEXT DEFAULT '', card_state TEXT DEFAULT '', drawn_state TEXT DEFAULT '', marked_state TEXT DEFAULT '')");
     }
 
     @Override
@@ -34,6 +36,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE users ADD COLUMN coins INTEGER DEFAULT 20");
             db.execSQL("ALTER TABLE users ADD COLUMN daily_resets INTEGER DEFAULT 0");
             db.execSQL("ALTER TABLE users ADD COLUMN last_reset_date TEXT DEFAULT ''");
+        }
+        if (oldVersion < 4) {
+            db.execSQL("ALTER TABLE users ADD COLUMN card_state TEXT DEFAULT ''");
+            db.execSQL("ALTER TABLE users ADD COLUMN drawn_state TEXT DEFAULT ''");
+            db.execSQL("ALTER TABLE users ADD COLUMN marked_state TEXT DEFAULT ''");
         }
     }
 
@@ -137,5 +144,122 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("daily_resets", newResets);
         values.put("last_reset_date", newDate);
         db.update("users", values, "username = ?", new String[]{username});
+    }
+
+    public void updateGameState(String username, int[][] card, List<Integer> drawnNumbers, boolean[][] marked) {
+        String cardStr = serializeCard(card);
+        String drawnStr = serializeList(drawnNumbers);
+        String markedStr = serializeMarked(marked);
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("card_state", cardStr);
+        values.put("drawn_state", drawnStr);
+        values.put("marked_state", markedStr);
+        db.update("users", values, "username = ?", new String[]{username});
+    }
+
+    public GameState getGameState(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query("users", new String[]{"card_state", "drawn_state", "marked_state"}, "username = ?", new String[]{username}, null, null, null);
+        if (cursor.moveToFirst()) {
+            String cardStr = cursor.getString(0);
+            String drawnStr = cursor.getString(1);
+            String markedStr = cursor.getString(2);
+            cursor.close();
+            if (cardStr.isEmpty()) {
+                return null; // No saved state
+            }
+            int[][] card = deserializeCard(cardStr);
+            List<Integer> drawn = deserializeList(drawnStr);
+            boolean[][] markedArr = deserializeMarked(markedStr);
+            return new GameState(card, drawn, markedArr);
+        }
+        cursor.close();
+        return null;
+    }
+
+    private String serializeCard(int[][] card) {
+        StringBuilder sb = new StringBuilder();
+        for (int row = 0; row < 5; row++) {
+            for (int col = 0; col < 5; col++) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(card[row][col]);
+            }
+        }
+        return sb.toString();
+    }
+
+    private int[][] deserializeCard(String str) {
+        if (str.isEmpty()) return null;
+        String[] parts = str.split(",");
+        if (parts.length != 25) return null; // Invalid
+        int[][] card = new int[5][5];
+        try {
+            int index = 0;
+            for (int row = 0; row < 5; row++) {
+                for (int col = 0; col < 5; col++) {
+                    card[row][col] = Integer.parseInt(parts[index++]);
+                }
+            }
+            return card;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String serializeList(List<Integer> list) {
+        StringBuilder sb = new StringBuilder();
+        for (int num : list) {
+            if (sb.length() > 0) sb.append(",");
+            sb.append(num);
+        }
+        return sb.toString();
+    }
+
+    private List<Integer> deserializeList(String str) {
+        List<Integer> list = new ArrayList<>();
+        if (str.isEmpty()) return list;
+        String[] parts = str.split(",");
+        for (String part : parts) {
+            list.add(Integer.parseInt(part));
+        }
+        return list;
+    }
+
+    private String serializeMarked(boolean[][] marked) {
+        StringBuilder sb = new StringBuilder();
+        for (int row = 0; row < 5; row++) {
+            for (int col = 0; col < 5; col++) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(marked[row][col] ? "1" : "0");
+            }
+        }
+        return sb.toString();
+    }
+
+    private boolean[][] deserializeMarked(String str) {
+        if (str.isEmpty()) return new boolean[5][5];
+        String[] parts = str.split(",");
+        boolean[][] marked = new boolean[5][5];
+        int index = 0;
+        for (int row = 0; row < 5; row++) {
+            for (int col = 0; col < 5; col++) {
+                marked[row][col] = "1".equals(parts[index++]);
+            }
+        }
+        return marked;
+    }
+
+    public static class GameState {
+        public int[][] card;
+        public List<Integer> drawnNumbers;
+        public boolean[][] marked;
+
+        public GameState(int[][] card, List<Integer> drawnNumbers, boolean[][] marked) {
+            this.card = card;
+            this.drawnNumbers = drawnNumbers;
+            this.marked = marked;
+        }
     }
 }
