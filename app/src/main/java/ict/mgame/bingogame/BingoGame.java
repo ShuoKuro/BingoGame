@@ -27,6 +27,12 @@ public class BingoGame {
         this.drawnNumberText = drawnNumberText;
     }
 
+    /**
+     * Loads a saved bingo card state into the UI, including marked cells.
+     *
+     * @param card   The 5x5 array representing the bingo card numbers.
+     * @param marked The 5x5 boolean array indicating which cells are marked.
+     */
     public void loadBingoCard(int[][] card, boolean[][] marked) {
         bingoGrid.removeAllViews();
         cardNumbers.clear();
@@ -34,6 +40,9 @@ public class BingoGame {
         this.marked = marked;
     }
 
+    /**
+     * Initializes a new random bingo card and sets up the UI.
+     */
     public void initializeBingoCard() {
         int[][] card = generateCard();
         bingoGrid.removeAllViews();
@@ -61,6 +70,12 @@ public class BingoGame {
         return card;
     }
 
+    /**
+     * Sets up the bingo card UI in the GridLayout using the provided card and marked states.
+     *
+     * @param card   The 5x5 array of card numbers.
+     * @param marked The 5x5 boolean array for marked cells.
+     */
     private void setupCardUI(int[][] card, boolean[][] marked) {
         for (int row = 0; row < 5; row++) {
             for (int col = 0; col < 5; col++) {
@@ -115,6 +130,15 @@ public class BingoGame {
         return true;
     }
 
+    /**
+     * Performs a draw action: generates a new number, updates the drawn text, and marks the card if matched.
+     * Assumes caller has checked coins and other conditions.
+     *
+     * @param coins        Current coins (not used here, but passed for context).
+     * @param dbHelper     Database helper (not used here).
+     * @param username     Username (not used here).
+     * @param coinsDisplay Coins display TextView (not used here).
+     */
     public void performDraw(int coins, DatabaseHelper dbHelper, String username, TextView coinsDisplay) {
         if (coins < 1 || drawnNumbers.size() >= 75) {
             return; // Assume caller handles toasts
@@ -145,6 +169,9 @@ public class BingoGame {
         }
     }
 
+    /**
+     * Resets and restarts the game by clearing state and initializing a new card.
+     */
     public void performRestart() {
         drawnNumbers.clear();
         cardNumbers.clear();
@@ -172,6 +199,11 @@ public class BingoGame {
         return marked;
     }
 
+    /**
+     * Sets whether the draw action is enabled (e.g., after a win).
+     *
+     * @param enabled True to enable drawing, false to disable.
+     */
     public void setDrawEnabled(boolean enabled) {
         // If needed, expose for bingo check
     }

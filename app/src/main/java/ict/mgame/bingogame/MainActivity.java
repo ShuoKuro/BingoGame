@@ -39,6 +39,11 @@ public class MainActivity extends AppCompatActivity {
     // Game handler
     private BingoGame bingoGame;
 
+    /**
+     * Called when the activity is first created. Sets up the UI, loads user data, and initializes the game state.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut down then this Bundle contains the data it most recently supplied in onSaveInstanceState(Bundle).
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +71,9 @@ public class MainActivity extends AppCompatActivity {
         setupButtons();
     }
 
+    /**
+     * Initializes all UI views by finding them via their IDs.
+     */
     private void initializeViews() {
         drawnNumberText = findViewById(R.id.drawn_number);
         usernameDisplay = findViewById(R.id.username_display);
@@ -78,6 +86,9 @@ public class MainActivity extends AppCompatActivity {
         restartButton = findViewById(R.id.restart_button);
     }
 
+    /**
+     * Loads user-specific data from the database, such as wins and coins, and updates the UI displays.
+     */
     private void loadUserData() {
         int wins = dbHelper.getWins(username);
         scoreDisplay.setText("Wins: " + wins);
@@ -86,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
         updateResetInfo();
     }
 
+    /**
+     * Loads the saved game state if available; otherwise, initializes a new game state and saves it.
+     */
     private void loadOrInitializeGameState() {
         DatabaseHelper.GameState state = dbHelper.getGameState(username);
         if (state != null) {
@@ -102,6 +116,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Configures the UI for guest mode, setting default values and initializing a new bingo card.
+     */
     private void setupGuestMode() {
         scoreDisplay.setText("Wins: 0");
         coins = 0;
@@ -111,6 +128,9 @@ public class MainActivity extends AppCompatActivity {
         bingoGame.initializeBingoCard();
     }
 
+    /**
+     * Sets up click listeners for all buttons in the activity.
+     */
     private void setupButtons() {
         drawButton.setOnClickListener(v -> drawNumber());
 
@@ -119,6 +139,9 @@ public class MainActivity extends AppCompatActivity {
         restartButton.setOnClickListener(v -> restartGame());
     }
 
+    /**
+     * Called when the activity is becoming visible to the user. Starts the coin timer if not in guest mode.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -127,6 +150,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Called when the activity is no longer visible to the user. Stops the coin timer and saves game state if not in guest mode.
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -136,6 +162,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the draw number action, including coin deduction, number generation, marking the card, and checking for bingo.
+     */
     private void drawNumber() {
         if (username.equals("Guest") || coins < 1) {
             Toast.makeText(this, "Not enough coins!", Toast.LENGTH_SHORT).show();
@@ -169,6 +198,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Starts the timer for passively adding coins every interval.
+     */
     private void startCoinTimer() {
         lastAddTime = System.currentTimeMillis();
         timerRunnable = new Runnable() {
@@ -188,12 +220,20 @@ public class MainActivity extends AppCompatActivity {
         timerHandler.post(timerRunnable);
     }
 
+    /**
+     * Stops the coin addition timer.
+     */
     private void stopCoinTimer() {
         if (timerRunnable != null) {
             timerHandler.removeCallbacks(timerRunnable);
         }
     }
 
+    /**
+     * Adds a specified amount of coins to the user's total, updates the database, and refreshes the UI.
+     *
+     * @param amount The number of coins to add.
+     */
     private void addCoin(int amount) {
         coins += amount;
         dbHelper.updateCoins(username, coins);
@@ -201,6 +241,9 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "+" + amount + " coin!", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Updates the daily reset information based on the current date and database values.
+     */
     private void updateResetInfo() {
         String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         lastResetDate = dbHelper.getLastResetDate(username);
@@ -213,6 +256,9 @@ public class MainActivity extends AppCompatActivity {
         resetsRemainingDisplay.setText("Resets left: " + (5 - dailyResets));
     }
 
+    /**
+     * Handles the restart game action, checking daily limits and performing the restart if allowed.
+     */
     private void restartGame() {
         if (username.equals("Guest")) {
             bingoGame.performRestart();
@@ -231,6 +277,9 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Game restarted!", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Saves the current game state to the database if not in guest mode.
+     */
     private void saveGameState() {
         if (username.equals("Guest")) return;
         dbHelper.updateGameState(username, bingoGame.getCard(), bingoGame.getDrawnNumbers(), bingoGame.getMarked());
