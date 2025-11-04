@@ -22,11 +22,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    /**
+     * Called when the database is created for the first time. Creates the users table with all columns.
+     *
+     * @param db The database.
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, wins INTEGER DEFAULT 0, coins INTEGER DEFAULT 20, daily_resets INTEGER DEFAULT 0, last_reset_date TEXT DEFAULT '', card_state TEXT DEFAULT '', drawn_state TEXT DEFAULT '', marked_state TEXT DEFAULT '')");
     }
 
+    /**
+     * Called when the database needs to be upgraded. Adds new columns based on version changes.
+     *
+     * @param db         The database.
+     * @param oldVersion The old database version.
+     * @param newVersion The new database version.
+     */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 2) {
@@ -52,6 +64,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return exists;
     }
 
+    /**
+     * Inserts a new user into the database with the given username and password, initializing other fields to defaults.
+     *
+     * @param username The username of the new user.
+     * @param password The password of the new user.
+     */
     public void insertUser(String username, String password) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -72,6 +90,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return valid;
     }
 
+    /**
+     * Updates the password for the specified user in the database.
+     *
+     * @param username    The username of the user to update.
+     * @param newPassword The new password to set.
+     */
     public void updatePassword(String username, String newPassword) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -90,6 +114,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return wins;
     }
 
+    /**
+     * Increments the win count for the specified user by 1.
+     *
+     * @param username The username of the user to increment wins for.
+     */
     public void incrementWins(String username) {
         int currentWins = getWins(username);
         SQLiteDatabase db = this.getWritableDatabase();
@@ -109,6 +138,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return coins;
     }
 
+    /**
+     * Updates the coin count for the specified user in the database.
+     *
+     * @param username The username of the user to update.
+     * @param newCoins The new coin amount to set.
+     */
     public void updateCoins(String username, int newCoins) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -138,6 +173,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return date;
     }
 
+    /**
+     * Updates the daily reset count and last reset date for the specified user.
+     *
+     * @param username  The username of the user to update.
+     * @param newResets The new reset count to set.
+     * @param newDate   The new last reset date to set.
+     */
     public void updateDailyResets(String username, int newResets, String newDate) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -146,6 +188,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.update("users", values, "username = ?", new String[]{username});
     }
 
+    /**
+     * Updates the game state (card, drawn numbers, marked cells) for the specified user in the database.
+     *
+     * @param username     The username of the user to update.
+     * @param card         The current bingo card state.
+     * @param drawnNumbers The list of drawn numbers.
+     * @param marked       The marked cells state.
+     */
     public void updateGameState(String username, int[][] card, List<Integer> drawnNumbers, boolean[][] marked) {
         String cardStr = serializeCard(card);
         String drawnStr = serializeList(drawnNumbers);
