@@ -1,26 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/username_display"
-        android:layout_width="wrap_content"
+    <!-- Top section: User info and stats -->
+    <LinearLayout
+        android:id="@+id/top_info"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Welcome!"
-        android:textSize="20sp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp" />
+        android:orientation="vertical"
+        android:layout_alignParentTop="true">
 
+        <TextView
+            android:id="@+id/username_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome!"
+            android:textSize="20sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/score_display"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Wins: 0"
+                android:textSize="18sp"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/coins_display"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Coins: 0"
+                android:textSize="18sp"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/resets_remaining"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Resets left: 5"
+                android:textSize="18sp"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/coin_timer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Next coin in: 30s"
+            android:textSize="18sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp" />
+    </LinearLayout>
+
+    <!-- Center section: Drawn number and Bingo grid -->
     <TextView
         android:id="@+id/drawn_number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Drawn Number"
         android:textSize="24sp"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@id/top_info"
+        android:layout_centerHorizontal="true" />
 
     <GridLayout
         android:id="@+id/bingo_grid"
@@ -28,22 +82,37 @@
         android:layout_height="wrap_content"
         android:columnCount="5"
         android:rowCount="5"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"
+        android:layout_below="@id/drawn_number" />
 
-    <Button
-        android:id="@+id/draw_button"
-        android:layout_width="wrap_content"
+    <!-- Bottom section: Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Draw Number"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp" />
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="16dp">
 
-    <Button
-        android:id="@+id/settings_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Settings"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp" />
+        <Button
+            android:id="@+id/draw_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Draw Number" />
 
-</LinearLayout>
+        <Button
+            android:id="@+id/restart_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Restart" />
+
+        <Button
+            android:id="@+id/settings_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Settings" />
+    </LinearLayout>
+
+</RelativeLayout>
